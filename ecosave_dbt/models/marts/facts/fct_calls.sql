@@ -49,8 +49,8 @@ left join result_mapping rm
 
 {% if is_incremental() %}
 
-WHERE b.start_at_uk > (
-    SELECT COALESCE(MAX(b.start_at_uk), '1900-01-01'::timestamp)
+WHERE b.start_date_time > (
+    SELECT COALESCE(MAX(b.start_date_time), '1900-01-01'::timestamp)
     FROM {{ this }}
 )
 {% endif %}

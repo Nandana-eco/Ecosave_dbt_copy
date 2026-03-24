@@ -19,6 +19,45 @@ lists as (
 
 ),
 
+-- 🔹 Lead-level aggregation
+lead_level as (
+
+    select
+        date_trunc('day', start_at_uk) as date_day,
+        list_id,
+        lead_id,
+
+        count(*) as calls_per_lead,
+
+        -- count of unreachable calls
+        sum(case when outcome_bucket = 'Unreachable' then 1 else 0 end) as unreachable_calls
+
+    from base
+    group by 1,2,3
+
+),
+
+-- 🔹 Dead leads = ALL calls were 'Unreachable'
+dead_metrics as (
+
+    select
+        date_day,
+        list_id,
+
+        sum(
+            case 
+                when calls_per_lead = unreachable_calls 
+                     and calls_per_lead > 0
+                then 1 
+                else 0 
+            end
+        ) as dead_leads_unreachable
+
+    from lead_level
+    group by 1,2
+
+),
+
 aggregated as (
 
     select
@@ -32,7 +71,7 @@ aggregated as (
         -- contact metrics
         sum(case when is_contacted then 1 else 0 end) as contacted_calls,
         round(
-            sum(case when is_contacted  then 1 else 0 end) * 1.0
+            sum(case when is_contacted then 1 else 0 end) * 1.0
             / nullif(count(*), 0),
             4
         ) as contact_rate,
@@ -41,7 +80,7 @@ aggregated as (
         sum(case when outcome_bucket = 'Converted' then 1 else 0 end) as sales,
         round(
             sum(case when outcome_bucket = 'Converted' then 1 else 0 end) * 1.0
-            / nullif(sum(case when is_contacted  then 1 else 0 end), 0),
+            / nullif(sum(case when is_contacted then 1 else 0 end), 0),
             4
         ) as conversion_rate,
 
@@ -78,11 +117,17 @@ select
     a.conversion_rate,
     a.total_talk_time_sec,
     a.avg_talk_time_sec,
-    a.attempts_per_lead
+    a.attempts_per_lead,
+
+    -- 🔹 New metric
+    coalesce(d.dead_leads_unreachable, 0) as dead_leads_unreachable
 
 from aggregated a
 left join lists l
     on a.list_id = l.list_id
+left join dead_metrics d
+    on a.date_day = d.date_day
+    and a.list_id = d.list_id
 
 {% if is_incremental() %}
 where a.date_day >= (
