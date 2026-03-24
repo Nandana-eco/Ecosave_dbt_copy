@@ -1,0 +1,88 @@
+version: 2
+
+sources:
+
+  # --------------------------
+  # Users table (raw)
+  # --------------------------
+  - name: users
+    description: "Raw users table from public schema"
+    database: ecosave_local          #  actual database
+    schema: public
+    tables:
+      - name: users
+        description: "User master data"
+
+  # --------------------------
+  # Leads table (raw)
+  # --------------------------
+  - name: lead
+    description: "Raw leads table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: lead
+        description: "All leads coming from suppliers"
+
+  # --------------------------
+  # History / Calls table (raw)
+  # --------------------------
+  - name: history
+    description: "Raw call history table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: history
+        description: "Call history for all leads"
+
+  # --------------------------
+  # Campaigns table (raw)
+  # --------------------------
+  - name: campaign
+    description: "Raw campaign table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: campaign
+        description: "Campaign master data"
+
+  # --------------------------
+  # Lists table (raw)
+  # --------------------------
+  - name: list
+    description: "Raw list table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: list
+        description: "Lead lists information"
+
+  # --------------------------
+  # suppliers table (raw)
+  # --------------------------
+  - name: import_supplier
+    description: "Raw supplier table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: import_supplier
+        description: "supplier information"
+
+  # --------------------------
+  # result code table (raw)
+  # --------------------------
+  - name: result_code
+    description: "Raw result code table from public schema"
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: result_code
+        description: "result code information"
+
+  # --------------------------
+  # result code  Mapping table (raw)
+  # --------------------------
+  - name: result_code_mapping
+    schema: analytics
+    tables:
+      - name: result_code_mapping
