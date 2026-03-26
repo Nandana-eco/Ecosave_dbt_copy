@@ -5,6 +5,8 @@
 SELECT
     lead_id,
     reference_id,
+    list_id,
+    last_result_code,
     name as contact_name,
     name2 as second_name,
     address as address_part_1,

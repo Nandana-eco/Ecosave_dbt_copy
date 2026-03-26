@@ -3,25 +3,40 @@
     unique_key=['date_day', 'list_id']
 ) }}
 
+-- 🔹 Base
 with base as (
-
     select *
     from {{ ref('fct_calls') }}
-
 ),
 
+-- 🔹 Lists
 lists as (
-
     select
         list_id,
         list_name
     from {{ ref('stg_list') }}
-
 ),
 
--- 🔹 Lead-level aggregation
-lead_level as (
+-- 🔹 Incremental filter (SAFE)
+{% if is_incremental() %}
+,last_processed as (
+    select coalesce(max(date_day), '1900-01-01'::timestamp) as last_day
+    from {{ this }}
+),
+filtered_base as (
+    select b.*
+    from base b
+    cross join last_processed lp
+    where date_trunc('day', b.start_at_uk) >= lp.last_day
+),
+{% else %}
+filtered_base as (
+    select * from base
+),
+{% endif %}
 
+-- 🔹 Lead-level aggregation (CORE)
+lead_level as (
     select
         date_trunc('day', start_at_uk) as date_day,
         list_id,
@@ -29,21 +44,22 @@ lead_level as (
 
         count(*) as calls_per_lead,
 
-        -- count of unreachable calls
-        sum(case when outcome_bucket = 'Unreachable' then 1 else 0 end) as unreachable_calls
+        -- dead logic
+        sum(case when outcome_bucket = 'Unreachable' then 1 else 0 end) as unreachable_calls,
 
-    from base
+        -- lead-level flags
+        max(case when is_contacted then 1 else 0 end) as is_contacted_lead,
+        max(case when outcome_bucket = 'Converted' then 1 else 0 end) as is_converted_lead
+
+    from filtered_base
     group by 1,2,3
+)
 
-),
-
--- 🔹 Dead leads = ALL calls were 'Unreachable'
-dead_metrics as (
-
+-- 🔹 Dead leads
+, dead_metrics as (
     select
         date_day,
         list_id,
-
         sum(
             case 
                 when calls_per_lead = unreachable_calls 
@@ -52,86 +68,110 @@ dead_metrics as (
                 else 0 
             end
         ) as dead_leads_unreachable
-
     from lead_level
     group by 1,2
+)
 
-),
-
-aggregated as (
-
+-- 🔹 Call-level aggregation
+, call_metrics as (
     select
         date_trunc('day', start_at_uk) as date_day,
         list_id,
 
-        -- volume
         count(*) as total_calls,
-        count(distinct lead_id) as unique_leads,
 
-        -- contact metrics
         sum(case when is_contacted then 1 else 0 end) as contacted_calls,
+
         round(
             sum(case when is_contacted then 1 else 0 end) * 1.0
             / nullif(count(*), 0),
             4
-        ) as contact_rate,
+        ) as contact_rate_calls,
 
-        -- conversion
-        sum(case when outcome_bucket = 'Converted' then 1 else 0 end) as sales,
+        sum(case when outcome_bucket = 'Converted' then 1 else 0 end) as sales_calls,
+
         round(
             sum(case when outcome_bucket = 'Converted' then 1 else 0 end) * 1.0
             / nullif(sum(case when is_contacted then 1 else 0 end), 0),
             4
-        ) as conversion_rate,
+        ) as conversion_rate_calls,
 
-        -- talk time (ONLY contacted calls)
-        sum(case when is_contacted then talk_time_seconds else 0 end) 
-            as total_talk_time_sec,
+        sum(case when is_contacted then talk_time_seconds else 0 end) as total_talk_time_sec,
 
         round(
             avg(case when is_contacted then talk_time_seconds end),
             2
-        ) as avg_talk_time_sec,
+        ) as avg_talk_time_sec
 
-        -- dial efficiency
-        round(
-            count(*) * 1.0 / nullif(count(distinct lead_id), 0),
-            2
-        ) as attempts_per_lead
-
-    from base
-    group by 1, 2
-
+    from filtered_base
+    group by 1,2
 )
 
+-- 🔹 Lead-level aggregation (final)
+, lead_metrics as (
+    select
+        date_day,
+        list_id,
+
+        count(*) as unique_leads,
+
+        sum(is_contacted_lead) as contacted_leads,
+
+        round(
+            sum(is_contacted_lead) * 1.0
+            / nullif(count(*), 0),
+            4
+        ) as contact_rate_leads,
+
+        sum(is_converted_lead) as converted_leads,
+
+        round(
+            sum(is_converted_lead) * 1.0
+            / nullif(sum(is_contacted_lead), 0),
+            4
+        ) as conversion_rate_leads
+
+    from lead_level
+    group by 1,2
+)
+
+-- 🔹 Final
 select
-    a.date_day,
-    a.list_id,
+    c.date_day,
+    c.list_id,
     coalesce(l.list_name, 'Unknown') as list_name,
 
-    a.total_calls,
-    a.unique_leads,
-    a.contacted_calls,
-    a.contact_rate,
-    a.sales,
-    a.conversion_rate,
-    a.total_talk_time_sec,
-    a.avg_talk_time_sec,
-    a.attempts_per_lead,
+    -- 📞 Call metrics
+    c.total_calls,
+    c.contacted_calls,
+    c.contact_rate_calls,
+    c.sales_calls,
+    c.conversion_rate_calls,
+    c.total_talk_time_sec,
+    c.avg_talk_time_sec,
 
-    -- 🔹 New metric
-    coalesce(d.dead_leads_unreachable, 0) as dead_leads_unreachable
+    -- 👤 Lead metrics
+    lm.unique_leads,
+    lm.contacted_leads,
+    lm.contact_rate_leads,
+    lm.converted_leads,
+    lm.conversion_rate_leads,
 
-from aggregated a
-left join lists l
-    on a.list_id = l.list_id
+    -- 💀 Dead leads
+    coalesce(d.dead_leads_unreachable, 0) as dead_leads_unreachable,
+
+    -- efficiency
+    round(
+        c.total_calls * 1.0 / nullif(lm.unique_leads, 0),
+        2
+    ) as attempts_per_lead
+
+from call_metrics c
+left join lead_metrics lm
+    on c.date_day = lm.date_day
+    and c.list_id = lm.list_id
 left join dead_metrics d
-    on a.date_day = d.date_day
-    and a.list_id = d.list_id
-
-{% if is_incremental() %}
-where a.date_day >= (
-    select coalesce(max(date_day), '1900-01-01'::timestamp)
-    from {{ this }}
-)
-{% endif %}
+    on c.date_day = d.date_day
+    and c.list_id = d.list_id
+left join lists l
+    on c.list_id = l.list_id

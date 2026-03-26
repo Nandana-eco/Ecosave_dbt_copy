@@ -16,6 +16,7 @@ SELECT
     result_id,
     user_id,
     start_date_time,end_date_time,
-    talk_time as talk_time_ms
+    talk_time as talk_time_ms,
+    wait_time as wait_time_ms
 FROM {{ source('history', 'history') }}
 

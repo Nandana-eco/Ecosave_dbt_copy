@@ -1,22 +1,32 @@
-{{ config(materialized='incremental',
-    unique_key='history_id')
- }}
-with base as (
+{{ config(
+    materialized='incremental',
+    unique_key='history_id'
+) }}
 
+-- 🔹 Base table
+with base as (
     select *
     from {{ ref('stg_public_history') }}
-
 ),
 
+-- 🔹 Result code mapping
 result_mapping as (
-
     select
         result_id,
         is_contacted,
         outcome_bucket
     from {{ ref('stg_result_code_mapping') }}
-
 )
+
+{% if is_incremental() %}
+,
+-- 🔹 Last processed timestamp (for safe incremental filtering)
+last_processed as (
+    select coalesce(max(start_date_time), '1900-01-01'::timestamp) as last_start
+    from {{ this }}
+)
+{% endif %}
+
 select
     b.history_id,
     b.lead_id,
@@ -30,17 +40,18 @@ select
     rm.is_contacted,
     rm.outcome_bucket,
 
-    -- timestamps
+    -- timestamps converted to UK timezone
     b.start_date_time at time zone 'Europe/London' as start_at_uk,
     b.end_date_time at time zone 'Europe/London' as end_at_uk,
 
     -- metrics
     round(b.talk_time_ms / 1000.0, 2) as talk_time_seconds,
+    round(b.wait_time_ms / 1000.0, 2) as wait_time_seconds,
 
     -- derived metrics
     case 
-        when b.talk_time_ms > 0 then 1 
-        else 0 
+        when b.talk_time_ms > 0 then 1
+        else 0
     end as is_connected
 
 from base b
@@ -48,9 +59,6 @@ left join result_mapping rm
     on b.result_id = rm.result_id
 
 {% if is_incremental() %}
-
-WHERE b.start_date_time > (
-    SELECT COALESCE(MAX(b.start_date_time), '1900-01-01'::timestamp)
-    FROM {{ this }}
-)
+cross join last_processed lp
+where b.start_date_time > lp.last_start
 {% endif %}
