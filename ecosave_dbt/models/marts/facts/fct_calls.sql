@@ -18,14 +18,7 @@ result_mapping as (
     from {{ ref('stg_result_code_mapping') }}
 )
 
-{% if is_incremental() %}
-,
--- 🔹 Last processed timestamp (for safe incremental filtering)
-last_processed as (
-    select coalesce(max(start_date_time), '1900-01-01'::timestamp) as last_start
-    from {{ this }}
-)
-{% endif %}
+
 
 select
     b.history_id,
@@ -59,6 +52,6 @@ left join result_mapping rm
     on b.result_id = rm.result_id
 
 {% if is_incremental() %}
-cross join last_processed lp
-where b.start_date_time > lp.last_start
+-- 🔹 Incremental filter: only load new rows based on history_id
+where b.history_id > (select coalesce(max(history_id), 0) from {{ this }})
 {% endif %}

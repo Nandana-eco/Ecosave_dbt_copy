@@ -1,18 +1,15 @@
 {{ config(
     materialized='incremental',
-    unique_key=['week_start', 'list_id']
+    unique_key=['month_start', 'list_id']
 ) }}
 
 with lead_level as (
     select
-        date_trunc('week', start_at_uk) as week_start,
+        date_trunc('month', start_at_uk) as month_start,
         list_id,
         lead_id,
 
-        -- Lead contacted at least once
         max(case when is_contacted then 1 else 0 end) as contacted_flag,
-
-        -- Lead converted at least once
         max(case when outcome_bucket = 'Converted' then 1 else 0 end) as converted_flag
 
     from {{ ref('fct_calls') }}
@@ -21,7 +18,7 @@ with lead_level as (
 
 call_level as (
     select
-        date_trunc('week', start_at_uk) as week_start,
+        date_trunc('month', start_at_uk) as month_start,
         list_id,
 
         count(*) as total_calls,
@@ -39,7 +36,7 @@ call_level as (
 
 lead_summary as (
     select
-        week_start,
+        month_start,
         list_id,
         count(*) as total_leads,
         sum(contacted_flag) as contacted_leads,
@@ -53,11 +50,10 @@ lead_summary as (
 ),
 
 filtered as (
-
     select
-        l.week_start,
+        l.month_start,
         l.list_id,
-        coalesce(s.list_name,'Unknown') as list_name,
+        coalesce(s.list_name, 'Unknown') as list_name,
         l.total_leads,
         l.contacted_leads,
         l.converted_leads,
@@ -70,21 +66,19 @@ filtered as (
 
     from lead_summary l
     left join call_level c
-        on l.week_start = c.week_start
+        on l.month_start = c.month_start
         and l.list_id = c.list_id
     left join {{ ref('stg_list') }} s
         on l.list_id = s.list_id
 
-
     {% if is_incremental() %}
-        where l.week_start > (
-            select coalesce(max(week_start), '1900-01-01'::date)
+        where l.month_start > (
+            select coalesce(max(month_start), '1900-01-01'::date)
             from {{ this }}
         )
     {% endif %}
-
 )
 
 select *
 from filtered
-order by week_start, list_id
+order by month_start, list_id
