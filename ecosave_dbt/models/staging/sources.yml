@@ -86,3 +86,42 @@ sources:
     schema: analytics
     tables:
       - name: result_code_mapping
+
+
+  - name: client_meters
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: client_meters
+        description: "result code information"
+
+  - name: clients
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: clients
+        description: "result code information"
+  - name: client_status
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: client_status
+        description: "result code information"
+  - name: company
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: company
+        description: "result code information"
+
+  - name: active_users
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: active_users
+        description: "result code information"
