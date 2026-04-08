@@ -18,24 +18,18 @@ WITH leads_clean AS (
 
 SELECT
     l.lead_id,
-    l.reference_id,
-    li.list_name,
+    l.reference_id_num,
     l.import_date,
     l.last_result_code,
-    m.meterid,
-    m.meter_status,
-    m.mpan ,
-    m.supplier_from_name as supplier_from,
-    m.supplier_to_name as supplier_to,
-    c.sales_agent_alias as sales_agent,
-    c.account_manager_alias as account_manager,
-    s.supplier_name as data_supplier
+    m.*,
+    s.supplier_name as data_supplier,
+    cl.attributed_list_name as attributed_list
 FROM leads_clean l
-LEFT JOIN {{ ref('stg_client_meters_enriched') }} m
+LEFT JOIN {{ ref('stg_tracker_main_data') }} m
     ON l.reference_id_num = m.clientid
-LEFT JOIN {{ ref('stg_clients_enriched') }} c
-    ON l.reference_id_num = c.clientid
 LEFT JOIN {{ ref('stg_suppliers') }} s
     ON l.supplier_num = s.supplier_id
 left join {{ref('stg_list')}} li
     on l.list_id=li.list_id
+left join {{ref('fct_converted_leads')}} cl 
+    on l.lead_id=cl.lead_id

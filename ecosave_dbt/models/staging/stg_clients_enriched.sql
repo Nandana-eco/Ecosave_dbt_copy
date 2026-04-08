@@ -13,7 +13,7 @@ SELECT
 FROM {{ ref('stg_clients') }} l
 
 LEFT JOIN {{ ref('stg_active_users') }} s1
-    ON l.sales_call_complete_agent::TEXT = s1.alias
+    ON l.sales_call_complete_agent= s1.userid
 
 LEFT JOIN {{ ref('stg_active_users') }} s2
-    ON l.account_manager::TEXT = s2.alias
+    ON l.account_manager= s2.userid

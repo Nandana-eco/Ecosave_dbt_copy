@@ -125,3 +125,20 @@ sources:
     tables:
       - name: active_users
         description: "result code information"
+
+  - name: tracker_main_data
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: tracker_main_data
+        description: "result code information"
+
+  - name: fct_calls
+    description: "details "
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: fct_calls
+        description: "result code information"
+  
