@@ -21,6 +21,7 @@ SELECT
     l.reference_id_num,
     l.import_date,
     l.last_result_code,
+    li.list_name as current_list,
     m.*,
     s.supplier_name as data_supplier,
     cl.attributed_list_name as attributed_list
