@@ -24,7 +24,12 @@ SELECT
     li.list_name as current_list,
     m.*,
     s.supplier_name as data_supplier,
-    cl.attributed_list_name as attributed_list
+    cl.attributed_list_name as attributed_list,
+    cme.supplier_from_name,
+    cme.meter_type,
+    cme.ced,
+    cme.meter_status
+
 FROM leads_clean l
 LEFT JOIN {{ ref('stg_tracker_main_data') }} m
     ON l.reference_id_num = m.clientid
@@ -34,3 +39,5 @@ left join {{ref('stg_list')}} li
     on l.list_id=li.list_id
 left join {{ref('fct_converted_leads')}} cl 
     on l.lead_id=cl.lead_id
+left join {{ref('stg_client_meters_enriched')}} cme 
+    on m.mpan=cme.mpan
