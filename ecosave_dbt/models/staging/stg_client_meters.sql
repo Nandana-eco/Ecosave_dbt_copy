@@ -11,5 +11,6 @@ SELECT
     ced,
     meter_type,
     supplier_from,
-    supplier_to
+    supplier_to,
+    removed
 FROM {{ source('client_meters', 'client_meters') }}
