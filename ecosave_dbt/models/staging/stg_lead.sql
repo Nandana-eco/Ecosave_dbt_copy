@@ -5,6 +5,7 @@
 SELECT
     lead_id,
     reference_id,
+    reference_source,
     list_id,
     last_result_code,
     name as contact_name,

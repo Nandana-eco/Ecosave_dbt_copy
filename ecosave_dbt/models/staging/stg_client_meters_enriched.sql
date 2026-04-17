@@ -8,6 +8,8 @@ SELECT
     l.sold_date,
     l.meter_status,
     l.mpan,
+    l.timestamp,
+    l.removed,
     l.ced,
     l.meter_type,
     c1.companytitle AS supplier_from_name,

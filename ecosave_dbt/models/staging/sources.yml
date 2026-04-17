@@ -150,5 +150,31 @@ sources:
       - name: client_meters_field_history
         description: "result code information"
 
+  - name: monthly_breakdown
+    description: "details "
+    database: ecosave_local
+    schema: public
+    tables:
+      - name: monthly_breakdown
+        description: "result code information"
+
+  - name: eazi_users
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: users
+        description: "result code information"
+
+  - name: supplier_status_mapping
+    description: "details "
+    database: ecosave_local
+    schema: raw
+    tables:
+      - name: supplier_status_mapping
+        description: "result code information"
+      
+
+
 
   

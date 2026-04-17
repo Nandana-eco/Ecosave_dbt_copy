@@ -3,14 +3,16 @@
 ) }}
 
 SELECT
-    meterid,
-    clientid,
-    sold_date,
-    meter_status,
-    mpan,
-    ced,
-    meter_type,
-    supplier_from,
-    supplier_to,
-    removed
-FROM {{ source('client_meters', 'client_meters') }}
+    cm.meterid,
+    cm.clientid,
+    cm.sold_date,
+    cm.meter_status,
+    cm.mpan,
+    cm.ced,
+    cm.meter_type,
+    cm.supplier_from,
+    cm.supplier_to,
+    cm.removed,
+    cm.timestamp   
+
+FROM {{ source('client_meters', 'client_meters') }} cm

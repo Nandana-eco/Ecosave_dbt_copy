@@ -17,8 +17,9 @@ WITH ranked AS (
         closer,
 
         -- ✅ standardised columns
-        UPPER(TRIM(ecosave_status)) AS ecosave_status,
-        UPPER(TRIM(supplier_status)) AS supplier_status,
+        --UPPER(TRIM(ecosave_status)) AS ecosave_status,
+        supplier_status AS supplier_status,
+        mapped_supplier_status as ecosave_status,
         UPPER(TRIM(team)) AS team,
 
         supplier_csd,
@@ -34,5 +35,5 @@ WITH ranked AS (
 
 SELECT *
 FROM ranked
-WHERE rn = 1
+--where rn = 1
 
