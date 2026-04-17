@@ -6,7 +6,7 @@ sources:
   # Users table (raw)
   # --------------------------
   - name: users
-    description: "Raw users table from public schema"
+    description: "Raw users (agents) table from maxcontact"
     database: ecosave_local          #  actual database
     schema: public
     tables:
@@ -17,18 +17,18 @@ sources:
   # Leads table (raw)
   # --------------------------
   - name: lead
-    description: "Raw leads table from public schema"
+    description: "Raw leads table from maxcontact- refreshed daily"
     database: ecosave_local
     schema: public
     tables:
       - name: lead
-        description: "All leads coming from suppliers"
+        description: "All leads present in lead table"
 
   # --------------------------
   # History / Calls table (raw)
   # --------------------------
   - name: history
-    description: "Raw call history table from public schema"
+    description: "Raw call history table from max contact"
     database: ecosave_local
     schema: public
     tables:
@@ -39,7 +39,7 @@ sources:
   # Campaigns table (raw)
   # --------------------------
   - name: campaign
-    description: "Raw campaign table from public schema"
+    description: "Raw campaign table from maxcontact"
     database: ecosave_local
     schema: public
     tables:
@@ -50,7 +50,7 @@ sources:
   # Lists table (raw)
   # --------------------------
   - name: list
-    description: "Raw list table from public schema"
+    description: "Raw list table from maxcontact"
     database: ecosave_local
     schema: public
     tables:
@@ -61,7 +61,7 @@ sources:
   # suppliers table (raw)
   # --------------------------
   - name: import_supplier
-    description: "Raw supplier table from public schema"
+    description: "Raw Data-supplier table from public schema"
     database: ecosave_local
     schema: public
     tables:
@@ -72,7 +72,7 @@ sources:
   # result code table (raw)
   # --------------------------
   - name: result_code
-    description: "Raw result code table from public schema"
+    description: "Raw result code table from maxcontact"
     database: ecosave_local
     schema: public
     tables:
@@ -83,43 +83,44 @@ sources:
   # result code  Mapping table (raw)
   # --------------------------
   - name: result_code_mapping
+    description:  "mapping table used to map result codes into outcome buckets and also add is_contacted flag for making human contact"
     schema: analytics
     tables:
       - name: result_code_mapping
 
 
   - name: client_meters
-    description: "details "
+    description: "client meters table from EAZI refreshed daily "
     database: ecosave_local
     schema: raw
     tables:
       - name: client_meters
-        description: "result code information"
+        description: "client meters table "
 
   - name: clients
-    description: "details "
+    description: "clients table from EAZI refershed daily "
     database: ecosave_local
     schema: raw
     tables:
       - name: clients
         description: "result code information"
   - name: client_status
-    description: "details "
+    description: "client_status table from EAZI refreshed daily"
     database: ecosave_local
     schema: raw
     tables:
       - name: client_status
-        description: "result code information"
+        description: "client status from "
   - name: company
-    description: "details "
+    description: "energy supplier companies from EAZI CRM "
     database: ecosave_local
     schema: raw
     tables:
       - name: company
-        description: "result code information"
+        description: Company information"
 
   - name: active_users
-    description: "details "
+    description: "active users"
     database: ecosave_local
     schema: raw
     tables:
@@ -127,52 +128,46 @@ sources:
         description: "result code information"
 
   - name: tracker_main_data
-    description: "details "
+    description: "Sold meters from EAZI"
     database: ecosave_local
     schema: raw
     tables:
       - name: tracker_main_data
-        description: "result code information"
+        description: "Sold meters"
 
   - name: fct_calls
-    description: "details "
+    description: "call history mart table"
     database: ecosave_local
     schema: public
     tables:
       - name: fct_calls
-        description: "result code information"
+        description: "call history"
 
   - name: client_meters_field_history
-    description: "details "
+    description: "changes in client_meters table "
     database: ecosave_local
     schema: raw
     tables:
       - name: client_meters_field_history
-        description: "result code information"
+        description: "incrementally refreshed daily"
 
   - name: monthly_breakdown
-    description: "details "
+    description: "Derived table from python code"
     database: ecosave_local
     schema: public
     tables:
       - name: monthly_breakdown
-        description: "result code information"
+        description: "derived table to see opportunities"
 
   - name: eazi_users
-    description: "details "
+    description: "user data from EAZI"
     database: ecosave_local
     schema: raw
     tables:
       - name: users
-        description: "result code information"
+        description: "user data from EAZI"
 
-  - name: supplier_status_mapping
-    description: "details "
-    database: ecosave_local
-    schema: raw
-    tables:
-      - name: supplier_status_mapping
-        description: "result code information"
+  
       
 
 
