@@ -13,6 +13,7 @@ SELECT
     cm.supplier_from,
     cm.supplier_to,
     cm.removed,
-    cm.timestamp   
+    cm.timestamp,
+    cm.meter_postcode   
 
 FROM {{ source('client_meters', 'client_meters') }} cm

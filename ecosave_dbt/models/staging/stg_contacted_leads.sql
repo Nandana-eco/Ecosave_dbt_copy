@@ -1,3 +1,6 @@
+
+--aggregated table with data of whether a lead has made human contact or not .
+
 {{ config(
     materialized='view'
 ) }}

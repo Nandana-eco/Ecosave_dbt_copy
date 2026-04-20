@@ -11,6 +11,7 @@ SELECT
     l.timestamp,
     l.removed,
     l.ced,
+    l.meter_postcode,
     l.meter_type,
     c1.companytitle AS supplier_from_name,
     c2.companytitle AS supplier_to_name

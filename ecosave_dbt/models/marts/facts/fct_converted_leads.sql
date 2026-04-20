@@ -1,3 +1,5 @@
+--get call hsitory of converted leads and track back the attributed list from that.
+
 with leads as (
     select distinct clientid as ref_id
     from {{ref('stg_tracker_main_data')}}
@@ -18,7 +20,7 @@ lead_calls as (
       ) = l.ref_id
 ),
 
--- ✅ latest call per lead
+-- latest call per lead
 latest_call as (
     select *
     from (
@@ -32,7 +34,7 @@ latest_call as (
     where rn = 1
 ),
 
--- ✅ previous non-final call ONLY when needed
+-- previous non-final call ONLY when needed
 previous_non_final as (
     select
         lc.lead_id,
