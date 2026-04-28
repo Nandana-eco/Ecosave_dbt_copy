@@ -19,7 +19,8 @@ WITH leads_clean AS (
 SELECT
     l.lead_id,
     l.reference_source,
-    li.list_name,
+    li.list_name as current_list,
+    lo.list_name as original_list,
     l.import_date,
     l.last_result_code,
     m.ecosave_status as ecosave_status,
@@ -66,7 +67,9 @@ lEFT JOIN {{ ref('stg_clients_enriched') }} c
 LEFT JOIN {{ ref('stg_suppliers') }} s
     ON l.supplier_num = s.supplier_id
 left join {{ref('stg_list')}} li
-    on l.list_id=li.list_id
+    on l.list_id=li.list_id 
+left join {{ref('stg_list')}} lo 
+    on l.original_list_id=lo.list_id
 left join {{ref('fct_converted_leads')}} cl 
     on l.lead_id=cl.lead_id
 left join {{ref('stg_contacted_leads')}} scl 

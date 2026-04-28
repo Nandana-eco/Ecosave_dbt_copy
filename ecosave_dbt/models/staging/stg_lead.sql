@@ -7,6 +7,7 @@ SELECT
     reference_id,
     reference_source,
     list_id,
+    original_list_id,
     last_result_code,
     name as contact_name,
     name2 as second_name,
